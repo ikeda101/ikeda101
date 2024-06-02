@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block head_title %}ブログ一覧表(一覧表示){% endblock %}
+<!--- 11行目　2024-04-18修正　 filter.qs　=>　page_obj　 -->
+{% block content %}
+  <div class="container" >
+    <h2 class="my-3 text-start mx-auto" style="max-width:500px">{% if not profile %}ブログ一覧表(一覧表示){% else %}{{profile.username}}のブログ一覧表(一覧表示){% endif %}</h2>
+  </div>
+  <div class="container d-flex justify-content-center flex-wrap-reverse py-3">
+    <div class="flex-grow-1"><!-- 一覧リストdi-->
+      {% if filter.qs %}
+        {% for obj in page_obj %}
+          <div class="card mx-auto mb-2" style="max-width:830px; min-width:300px;"> <!--700,300  => 830,300-->
+            <div class="card-header">
+              {{ obj.date|date:"Y年m年d日" }}
+             
+              {% if not obj.public %}
+                <span class="badge bg-secondary">下書</span>
+              {% else %}
+                <span class="badge bg-secondary">公開</span>
+              {% endif %}
+           
+              {% if obj.img  %} 
+                <h7><font size="2" color="blue">写真有り</font></h7>
+              {% else %}
+                <h7><font size="2" color="red" >写真無し</font></h7>
+              {% endif %}
+            
+              {% if obj.slug == "" %}
+                <a href={% url 'nippo-list'   %} class="btn btn-danger btn-sm">詳細へ</a>
+              {% else %}
+                <a href={% url 'nippo-detail' obj.slug  %} class="btn btn-danger btn-sm">詳細へ</a>
+              {% endif %} 
+            
+              {% if obj.user == request.user %}
+                <span class="badge bg-primary">
+                  <a class="text-light" href={{obj.get_profile_page_url}}>あなた</a>
+                </span>
+              {% else %}
+                <span class="badge bg-secondary">
+                  <a class="text-light" href={{obj.get_profile_page_url}}>{{ obj.user.profile.username }}</a>
+                </span>
+              {% endif %} 
+              
+              {% if obj.user == request.user %} 
+                <span class="float-end text-danger" data-bs-toggle="modal" data-bs-target="#deleteModal-{{obj.slug}}">
+                  <!--<i class="bi bi-trash-fill"></i>-->
+                  <button type="button" class="btn btn-danger btn-sm"><span class="bi bi-trash-fill"></span></button>
+                </span>
+                <a href={% url "nippo-update" obj.slug %}> 
+              {% else %}
+                <a href={% url 'nippo-detail' obj.slug %}> 
+              {% endif %}
+              <font size="3">{{ obj.title }}</font>
+            </a>
+            </div>
+          </div>
+          {% include "nippo/nippo-delete.html" with object=obj %}
+        {% endfor %}
+      {% else %}
+        <div style="text-align: center">
+          <p style="background-color:#fce9ea">
+            <font  size="6" color = "red">　　　表示するブログがありません。</font>
+          </p>
+        </div>
+      {% endif %}
+      <br>
+      <!--  2024-04-25 追加開始 -->
+      <nav aria-label="Page navigation example">
+        <ul class="pagination">
+          &ensp;
+          {% if page_obj.has_previous %}
+            <li><a class="page-link text-primary d-inline-block" href="?page={{ page_obj.previous_page_number }}">
+              <span aria-hidden="true">&laquo;</span>前へ</a></li>
+          {% else %}
+            <li class="disabled"><div class="page-link text-secondary d-inline-block disabled" href="#">
+              <span aria-hidden="true">&laquo;</span>前へ</div></li>
+          {% endif %}
+
+          {% if page_obj.has_previous %}
+            {% if page_obj.previous_page_number != 1 %}
+              <li><a class="page-link text-primary d-inline-block" href="?page=1">1</a></li>
+              <li><font color="#0d6efd">……</font></li>
+            {% endif %}
+            <li><a class="page-link text-primary d-inline-block" href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a></li>
+          {% endif %}
+          <li class="page-item active"><div class="page-link" href="#">{{ page_obj.number }}</div></li>
+          <!--<li class="disabled"><div class="page-link text-secondary d-inline-block disabled" href="#">{{ page_obj.number }}</div></li>-->
+          <!--<li class="page-item active"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>-->
+          {% if page_obj.has_next %}
+              <li><a class="page-link text-primary d-inline-block" href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a></li> 
+              {% if page_obj.next_page_number != page_obj.paginator.num_pages %}
+                <li><font color="#0d6efd">……</font></li>
+                <li><a class="page-link text-primary d-inline-block" href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a></li>
+              {% endif %}
+          {% endif %}
+          {% if page_obj.has_next %}
+            <li><a class="page-link text-primary d-inline-block" href="?page={{ page_obj.next_page_number }}">
+              次へ<span aria-hidden="true">&raquo;</span></a></li>
+          {% else %}
+            <li class="disabled"><div class="page-link text-secondary d-inline-block disabled" href="#">
+             次へ<span aria-hidden="true">&raquo;</span></div></li>
+          {% endif %}
+        </ul>
+      </nav>
+      <!--  2024-04-25 追加終了 -->
+
+      <!--<nav aria-label="Page navigation">
+        <ul class="pagination text-center">
+          &ensp;&ensp;&ensp;
+          {% if page_obj.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+                <span class="sr-only">前へ</span>
+              </a>
+            </li>
+          {% endif %}
+        
+          {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+              <li class="page-item active"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+              <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+          {% endfor %}
+        
+          {% if page_obj.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+                <span class="sr-only">次へ</span>
+              </a>
+            </li>
+          {% endif %}
+        </ul>
+      </nav>-->
+      <!--  2024-04-18 追加終了 -->
+    </div><!-- 一覧リストdiv終了-->
+    <!-- 右側を表示する -->
+    {% include 'nippo/nippo-filter.html' %}
+  </div>
+{% endblock %}

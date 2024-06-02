@@ -1,0 +1,39 @@
+<div class="px-2 filter-container">
+    {% if request.user.is_authenticated %}
+        <div class="filter-add-btn">
+            <a href={% url "nippo-create" %} class="btn btn-success w-100 from-control">
+                新規追加
+            </a>
+        </div>
+    {% endif %}
+    <form method="GET">
+        <div class="flex-sort">
+            <div class="w-100">
+                {{ filter.form.date.label }} {{ filter.form.date}}
+            </div>
+            {% if request.user.is_authenticated %}
+                <div class="w-100">
+                    {{ filter.form.public.label }}{{ filter.form.public }}
+                </div>
+            {% endif %}
+            <button type="submit" class="btn btn-primary form-control">ソート</button>
+        </div>
+    </form>
+    <!-- 2024-04-20 追加開始-->
+    <br>
+    <h6><font color="blue">表示方法選択が「全表示」の時機能</font></h6>
+    <br>
+    <hr>
+    <h3>&ensp;&ensp;&ensp;表示方法選択</h3>
+    <br>
+    <div>
+        <a href={% url "nippo-all" %} class="btn btn-secondary w-100 from-control">
+            全表示
+        </a>
+        &nbsp;&nbsp;
+        <a href={% url "nippo-list" %} class="btn btn-secondary w-100 from-control">
+            一覧表示
+        </a>
+    </div>
+    <!-- 2024-04-20 追加終了-->
+</div>
